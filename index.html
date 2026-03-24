@@ -297,34 +297,43 @@
             initNotesUI();
         });
 
-        async function initializeApp() {
+      async function initializeApp() {
             showLoading();
-            const [bRes, rRes, uRes, nRes, aRes] = await Promise.all([
-                callServer('getAllBookings'), callServer('getAllRooms'), 
-                callServer('getAllUsers'), callServer('getBookerNames'),
-                callServer('getAllActivities')
-            ]);
-            
-            cachedBookings = Array.isArray(bRes) ? bRes : [];
-            cachedRooms = Array.isArray(rRes) ? rRes : [];
-            cachedActivities = Array.isArray(aRes) ? aRes : [];
-            
-            filteredBookings = [...cachedBookings];
-            filteredActivities = [...cachedActivities];
-            
-            if (Array.isArray(nRes)) {
-                document.getElementById('bookerList').innerHTML = nRes.map(n => `<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('');
+            try {
+                const [bRes, rRes, uRes, nRes, aRes] = await Promise.all([
+                    callServer('getAllBookings'), callServer('getAllRooms'), 
+                    callServer('getAllUsers'), callServer('getBookerNames'),
+                    callServer('getAllActivities')
+                ]);
+                
+                // ป้องกันกรณี API คืนค่ากลับมาเป็นข้อความ Error แทนที่จะเป็น Array
+                cachedBookings = Array.isArray(bRes) ? bRes : [];
+                cachedRooms = Array.isArray(rRes) ? rRes : [];
+                cachedUsers = Array.isArray(uRes) ? uRes : [];
+                cachedActivities = Array.isArray(aRes) ? aRes : [];
+                
+                filteredBookings = [...cachedBookings];
+                filteredActivities = [...cachedActivities];
+                
+                if (Array.isArray(nRes)) {
+                    // ใช้ String(n) ป้องกัน Error กรณีชื่อผู้จองถูกพิมพ์มาเป็นตัวเลขล้วนใน Google Sheet
+                    document.getElementById('bookerList').innerHTML = nRes.map(n => `<option value="${String(n).replace(/"/g,'&quot;')}"></option>`).join('');
+                }
+
+                loadFilterOptions();
+                generateTimeOptions();
+                updateDashboardStats();
+                renderCalendar();
+                renderBookingTable();
+                renderActivityTable();
+                
+            } catch (error) {
+                console.error("พบข้อผิดพลาด: ", error);
+                Swal.fire('ข้อผิดพลาด', 'ไม่สามารถดึงข้อมูลได้ กรุณาตรวจสอบการตั้งค่า API หรือรีเฟรชหน้าเว็บ', 'error');
+            } finally {
+                hideLoading(); // ไม่ว่าจะสำเร็จหรือพัง ต้องปิดตัวหมุนเสมอ
             }
-
-            loadFilterOptions();
-            generateTimeOptions();
-            updateDashboardStats();
-            renderCalendar();
-            renderBookingTable();
-            renderActivityTable();
-            hideLoading();
         }
-
         function updateDashboardStats() {
             document.getElementById('totalBookings').textContent = cachedBookings.length;
             document.getElementById('mainApprovedCount').textContent = cachedBookings.filter(b => b.status === 'approved').length;
