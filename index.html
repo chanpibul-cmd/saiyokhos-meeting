@@ -26,20 +26,20 @@
 </head>
 <body class="bg-gray-50 min-h-screen">
     
-    <header class="gradient-bg text-white shadow-lg">
+    <header class="gradient-bg text-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <i class="fas fa-calendar-alt text-2xl"></i>
-                <h1 class="text-2xl font-bold">ระบบจองห้องประชุม</h1>
+                <h1 class="text-2xl font-bold">ระบบจองห้อง & กิจกรรม</h1>
             </div>
             <div class="flex space-x-3">
-                <button id="activityBtn" class="bg-blue-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-600 transition-all shadow-md">
+                <button id="activityBtn" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-medium hover:bg-gray-100 transition-all shadow-md">
                     <i class="fas fa-calendar-check mr-2"></i>บันทึกกิจกรรม
                 </button>
-                <button id="bookingBtn" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-medium shadow-md">
+                <button id="bookingBtn" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-medium hover:bg-gray-100 transition-all shadow-md">
                     <i class="fas fa-plus mr-2"></i>จองห้อง
                 </button>
-                <button id="adminBtn" class="bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium shadow-md">
+                <button id="adminBtn" class="bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium shadow-md hover:bg-yellow-600">
                     <i class="fas fa-user-shield mr-2"></i>Admin
                 </button>
             </div>
@@ -50,16 +50,24 @@
         
         <div class="bg-white rounded-xl shadow-lg p-6 mb-8 card-shadow">
             <div class="flex justify-between items-center mb-6">
-                <button id="prevMonth" class="btn-primary text-white px-4 py-2 rounded-lg transition-all"><i class="fas fa-chevron-left"></i></button>
-                <h2 id="currentMonth" class="text-2xl font-bold text-gray-800"></h2>
-                <button id="nextMonth" class="btn-primary text-white px-4 py-2 rounded-lg transition-all"><i class="fas fa-chevron-right"></i></button>
+                <div class="flex space-x-2">
+                    <button id="calViewBookings" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow" onclick="setCalendarView('bookings')"><i class="fas fa-door-open mr-2"></i>ห้องประชุม</button>
+                    <button id="calViewActivities" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium shadow hover:bg-gray-300" onclick="setCalendarView('activities')"><i class="fas fa-running mr-2"></i>กิจกรรม</button>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="prevMonth" class="btn-primary text-white px-4 py-2 rounded-lg transition-all"><i class="fas fa-chevron-left"></i></button>
+                    <h2 id="currentMonth" class="text-2xl font-bold text-gray-800 w-48 text-center"></h2>
+                    <button id="nextMonth" class="btn-primary text-white px-4 py-2 rounded-lg transition-all"><i class="fas fa-chevron-right"></i></button>
+                </div>
             </div>
-            <div class="mt-2 flex items-center gap-3 text-xs text-gray-600">
+            
+            <div id="calendarLegend" class="mt-2 flex items-center gap-3 text-xs text-gray-600 mb-4">
                 <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-green-100 border border-green-300"></span> อนุมัติ</span>
                 <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-yellow-100 border border-yellow-300"></span> รออนุมัติ</span>
                 <span class="inline-flex items-center gap-1"><span class="inline-block w-3 h-3 rounded bg-red-100 border border-red-300"></span> ไม่อนุมัติ</span>
             </div>
-            <div class="grid grid-cols-7 gap-2 mb-4 mt-4">
+
+            <div class="grid grid-cols-7 gap-2 mb-2">
                 <div class="text-center font-semibold text-gray-600 py-2">อา</div><div class="text-center font-semibold text-gray-600 py-2">จ</div><div class="text-center font-semibold text-gray-600 py-2">อ</div><div class="text-center font-semibold text-gray-600 py-2">พ</div><div class="text-center font-semibold text-gray-600 py-2">พฤ</div><div class="text-center font-semibold text-gray-600 py-2">ศ</div><div class="text-center font-semibold text-gray-600 py-2">ส</div>
             </div>
             <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div>
@@ -79,163 +87,169 @@
                 <div class="ml-4"><p class="text-sm font-medium text-gray-600">รออนุมัติ</p><p id="mainPendingCount" class="text-2xl font-bold text-gray-900">0</p></div>
             </div>
             <div class="bg-white rounded-xl shadow-lg p-6 card-shadow flex items-center">
-                <div class="p-3 rounded-full bg-red-100 text-red-600"><i class="fas fa-times-circle text-2xl"></i></div>
-                <div class="ml-4"><p class="text-sm font-medium text-gray-600">ไม่อนุมัติ</p><p id="mainRejectedCount" class="text-2xl font-bold text-gray-900">0</p></div>
+                <div class="p-3 rounded-full bg-indigo-100 text-indigo-600"><i class="fas fa-running text-2xl"></i></div>
+                <div class="ml-4"><p class="text-sm font-medium text-gray-600">กิจกรรมทั้งหมด</p><p id="totalActivities" class="text-2xl font-bold text-gray-900">0</p></div>
             </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-lg p-6 card-shadow">
+        <div class="bg-white rounded-xl shadow-lg p-6 card-shadow mb-8">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-list mr-2 text-purple-600"></i>รายการการจอง</h3>
-                <button onclick="exportBookingsToExcel()" class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-green-700 transition-all shadow-md"><i class="fas fa-file-excel mr-2"></i>ส่งออก Excel</button>
+                <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-door-open mr-2 text-purple-600"></i>รายการจองห้องประชุม</h3>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-6">
-                <div><label class="block text-sm font-medium text-gray-700 mb-2">ค้นหาหัวข้อ</label><input type="text" id="searchTitle" placeholder="ค้นหา..." class="w-full p-2 border rounded-lg" oninput="applyFilters()"></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-2">ห้อง</label><select id="filterRoom" class="w-full p-2 border rounded-lg" onchange="applyFilters()"><option value="">ทุกห้อง</option></select></div>
-                <div><label class="block text-sm font-medium text-gray-700 mb-2">สถานะ</label><select id="filterStatus" class="w-full p-2 border rounded-lg" onchange="applyFilters()"><option value="">ทุกสถานะ</option><option value="pending">รออนุมัติ</option><option value="approved">อนุมัติ</option><option value="rejected">ไม่อนุมัติ</option></select></div>
-                <div class="flex items-end"><button onclick="clearFilters()" class="w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-600"><i class="fas fa-times mr-2"></i>ล้างตัวกรอง</button></div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <input type="text" id="searchBooking" placeholder="ค้นหาหัวข้อการจอง..." class="w-full p-2 border rounded-lg" oninput="applyBookingFilters()">
+                <select id="filterRoom" class="w-full p-2 border rounded-lg" onchange="applyBookingFilters()"><option value="">ทุกห้อง</option></select>
+                <select id="filterStatus" class="w-full p-2 border rounded-lg" onchange="applyBookingFilters()"><option value="">ทุกสถานะ</option><option value="pending">รออนุมัติ</option><option value="approved">อนุมัติ</option><option value="rejected">ไม่อนุมัติ</option></select>
+                <button onclick="clearBookingFilters()" class="w-full bg-gray-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-600">ล้างตัวกรอง</button>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full table-auto text-left">
-                    <thead class="bg-gray-50 text-gray-700">
+                    <thead class="bg-gray-50 text-gray-700 border-b">
                         <tr><th class="px-4 py-3">ห้อง</th><th class="px-4 py-3">วันที่/เวลา</th><th class="px-4 py-3">หัวข้อ</th><th class="px-4 py-3">ผู้จอง</th><th class="px-4 py-3">สถานะ</th></tr>
                     </thead>
                     <tbody id="bookingTable"></tbody>
                 </table>
             </div>
+            <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
+                <div>แสดง <select id="bookingLimit" class="border rounded p-1 mx-1" onchange="changeBookingLimit()"><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="50">50</option><option value="100">100</option></select> รายการ</div>
+                <div class="space-x-2">
+                    <button onclick="changeBookingPage(-1)" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">&lt; ก่อนหน้า</button>
+                    <span id="bookingPageInfo" class="font-medium">หน้า 1/1</span>
+                    <button onclick="changeBookingPage(1)" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">ถัดไป &gt;</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6 card-shadow">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800"><i class="fas fa-running mr-2 text-blue-600"></i>รายการกิจกรรม</h3>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <input type="text" id="searchActivity" placeholder="ค้นหาหัวข้อกิจกรรม..." class="w-full p-2 border rounded-lg" oninput="applyActivityFilters()">
+                <button onclick="clearActivityFilters()" class="w-full md:w-auto bg-gray-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-600 justify-self-end">ล้างตัวกรอง</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full table-auto text-left">
+                    <thead class="bg-gray-50 text-gray-700 border-b">
+                        <tr><th class="px-4 py-3">วันที่/เวลา</th><th class="px-4 py-3">หัวข้อกิจกรรม</th><th class="px-4 py-3">จำนวนคน</th><th class="px-4 py-3">ผู้บันทึก</th></tr>
+                    </thead>
+                    <tbody id="activityTable"></tbody>
+                </table>
+            </div>
+            <div class="flex justify-between items-center mt-4 text-sm text-gray-600">
+                <div>แสดง <select id="activityLimit" class="border rounded p-1 mx-1" onchange="changeActivityLimit()"><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="50">50</option><option value="100">100</option></select> รายการ</div>
+                <div class="space-x-2">
+                    <button onclick="changeActivityPage(-1)" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">&lt; ก่อนหน้า</button>
+                    <span id="activityPageInfo" class="font-medium">หน้า 1/1</span>
+                    <button onclick="changeActivityPage(1)" class="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">ถัดไป &gt;</button>
+                </div>
+            </div>
         </div>
     </div>
 
     <div id="bookingModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] flex flex-col">
-            <div class="gradient-bg text-white p-6 rounded-t-xl flex-shrink-0"><h3 class="text-xl font-bold"><i class="fas fa-calendar-plus mr-2"></i>จองห้องประชุม</h3></div>
-            <div class="flex-1 overflow-y-auto p-6">
-                <form id="bookingForm" class="space-y-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-2">ห้อง</label><select id="roomSelect" class="w-full p-3 border rounded-lg" required><option value="">เลือกห้อง</option></select></div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-2">วันที่</label><input type="date" id="bookingDate" class="w-full p-3 border rounded-lg" required></div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-sm font-medium text-gray-700 mb-2">เวลาเริ่ม</label><select id="startTime" class="w-full p-3 border rounded-lg" required><option value="">เลือกเวลา</option></select></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-2">เวลาสิ้นสุด</label><select id="endTime" class="w-full p-3 border rounded-lg" required><option value="">เลือกเวลา</option></select></div>
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="gradient-bg text-white p-6 rounded-t-xl flex-shrink-0 flex justify-between items-center">
+                <h3 class="text-xl font-bold"><i class="fas fa-calendar-plus mr-2"></i>จองห้องประชุม</h3>
+                <button id="cancelBookingIcon" class="hover:text-gray-200 text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-8">
+                <form id="bookingForm" class="space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">เลือกห้อง <span class="text-red-500">*</span></label><select id="roomSelect" class="w-full p-3 border rounded-lg bg-gray-50" required><option value="">เลือกห้อง</option></select></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">วันที่ <span class="text-red-500">*</span></label><input type="date" id="bookingDate" class="w-full p-3 border rounded-lg bg-gray-50" required></div>
                     </div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-2">หัวข้อประชุม</label><input type="text" id="meetingTitle" class="w-full p-3 border rounded-lg" required></div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-sm font-medium text-gray-700 mb-2">จำนวนคน</label><input type="number" id="attendees" min="1" class="w-full p-3 border rounded-lg" required></div>
-                        <div><label class="block text-sm font-medium text-gray-700 mb-2">ผู้จอง</label><input id="bookerName" type="text" required list="bookerList" class="w-full p-3 border rounded-lg"><datalist id="bookerList"></datalist></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">เวลาเริ่ม <span class="text-red-500">*</span></label><select id="startTime" class="w-full p-3 border rounded-lg bg-gray-50" required><option value="">เลือกเวลา</option></select></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">เวลาสิ้นสุด <span class="text-red-500">*</span></label><select id="endTime" class="w-full p-3 border rounded-lg bg-gray-50" required><option value="">เลือกเวลา</option></select></div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ/อุปกรณ์</label>
-                        <div class="space-y-2 text-sm" id="notesContainer">
-                            <label class="flex items-center"><input type="checkbox" name="notes" value="Notebook" class="mr-2"> Notebook</label>
-                            <label class="flex items-center"><input type="checkbox" name="notes" value="Projector" class="mr-2"> Projector</label>
-                            <label class="flex items-center"><input type="checkbox" name="notes" value="ถ่ายภาพหมู่ร่วมกับป้าย" class="mr-2"> ถ่ายภาพหมู่ร่วมกับป้าย</label>
-                            <label class="flex items-center"><input type="checkbox" name="notes" value="ถ่ายภาพกิจกรรม" class="mr-2"> ถ่ายภาพกิจกรรม</label>
-                            <label class="flex items-center"><input type="checkbox" id="otherNote" class="mr-2"> อื่นๆ <input type="text" id="otherNoteText" class="ml-2 p-1 border rounded-lg hidden"></label>
+                    <div><label class="block text-sm font-medium text-gray-700 mb-2">หัวข้อการประชุม <span class="text-red-500">*</span></label><input type="text" id="meetingTitle" class="w-full p-3 border rounded-lg bg-gray-50" required></div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">จำนวนผู้เข้าร่วม <span class="text-red-500">*</span></label><input type="number" id="attendees" min="1" class="w-full p-3 border rounded-lg bg-gray-50" required></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">ชื่อผู้จอง <span class="text-red-500">*</span></label><input id="bookerName" type="text" required list="bookerList" class="w-full p-3 border rounded-lg bg-gray-50"><datalist id="bookerList"></datalist></div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg border">
+                        <label class="block text-sm font-bold text-gray-700 mb-3">อุปกรณ์/หมายเหตุที่ต้องการ</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm" id="notesContainer">
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" name="notes" value="Notebook" class="mr-3 w-4 h-4 text-purple-600"> Notebook</label>
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" name="notes" value="Projector" class="mr-3 w-4 h-4 text-purple-600"> Projector</label>
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" name="notes" value="ถ่ายภาพหมู่ร่วมกับป้าย" class="mr-3 w-4 h-4 text-purple-600"> ถ่ายภาพหมู่ร่วมกับป้าย</label>
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" name="notes" value="ถ่ายภาพกิจกรรม" class="mr-3 w-4 h-4 text-purple-600"> ถ่ายภาพกิจกรรม</label>
+                            <label class="flex items-center cursor-pointer col-span-1 md:col-span-2">
+                                <input type="checkbox" id="otherNote" class="mr-3 w-4 h-4 text-purple-600"> อื่นๆ 
+                                <input type="text" id="otherNoteText" class="ml-3 p-2 border rounded-lg hidden flex-1" placeholder="ระบุรายละเอียดเพิ่มเติม">
+                            </label>
                         </div>
                     </div>
-                    <div class="flex space-x-3 pt-4">
-                        <button type="submit" class="flex-1 btn-primary text-white py-3 rounded-lg font-medium"><i class="fas fa-save mr-2"></i>บันทึกการจอง</button>
-                        <button type="button" id="cancelBooking" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-medium"><i class="fas fa-times mr-2"></i>ยกเลิก</button>
+                    <div class="flex space-x-4 pt-4">
+                        <button type="submit" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold text-lg shadow-lg"><i class="fas fa-save mr-2"></i>ยืนยันการจอง</button>
+                        <button type="button" id="cancelBooking" class="flex-1 bg-gray-400 text-white py-3 rounded-lg font-bold text-lg hover:bg-gray-500"><i class="fas fa-times mr-2"></i>ยกเลิก</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <div id="activityModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div class="bg-blue-600 text-white p-4 flex justify-between">
+    <div id="activityModal" class="fixed inset-0 bg-black/50 modal-backdrop hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="gradient-bg text-white p-6 rounded-t-xl flex justify-between items-center">
                 <h3 class="text-xl font-bold"><i class="fas fa-calendar-check mr-2"></i>บันทึกกิจกรรม</h3>
-                <button id="cancelActivity" class="hover:text-gray-200"><i class="fas fa-times"></i></button>
+                <button id="cancelActivityIcon" class="hover:text-gray-200 text-2xl"><i class="fas fa-times"></i></button>
             </div>
-            <form id="activityForm" class="p-6 space-y-4">
-                <div><label class="block text-sm font-medium mb-1">วันที่</label><input type="date" id="actDate" class="w-full p-2 border rounded" required></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium mb-1">เวลาเริ่ม</label><select id="actStartTime" class="w-full p-2 border rounded" required></select></div>
-                    <div><label class="block text-sm font-medium mb-1">เวลาสิ้นสุด</label><select id="actEndTime" class="w-full p-2 border rounded" required></select></div>
-                </div>
-                <div><label class="block text-sm font-medium mb-1">หัวข้อกิจกรรม</label><input type="text" id="actTitle" class="w-full p-2 border rounded" required></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium mb-1">จำนวนคน</label><input type="number" id="actAttendees" class="w-full p-2 border rounded" required></div>
-                    <div><label class="block text-sm font-medium mb-1">ผู้บันทึก</label><input id="actBooker" type="text" required list="bookerList" class="w-full p-2 border rounded"></div>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">หมายเหตุ/อุปกรณ์</label>
-                    <div class="space-y-2 text-sm" id="actNotesContainer">
-                        <label class="flex items-center"><input type="checkbox" name="actNotes" value="Notebook" class="mr-2"> Notebook</label>
-                        <label class="flex items-center"><input type="checkbox" name="actNotes" value="Projector" class="mr-2"> Projector</label>
-                        <label class="flex items-center"><input type="checkbox" name="actNotes" value="ถ่ายภาพหมู่ร่วมกับป้าย" class="mr-2"> ถ่ายภาพหมู่ร่วมกับป้าย</label>
-                        <label class="flex items-center"><input type="checkbox" name="actNotes" value="ถ่ายภาพกิจกรรม" class="mr-2"> ถ่ายภาพกิจกรรม</label>
-                        <label class="flex items-center"><input type="checkbox" id="actOtherNote" class="mr-2"> อื่นๆ <input type="text" id="actOtherNoteText" class="ml-2 p-1 border rounded-lg hidden"></label>
+            <div class="flex-1 overflow-y-auto p-8">
+                <form id="activityForm" class="space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">วันที่ <span class="text-red-500">*</span></label><input type="date" id="actDate" class="w-full p-3 border rounded-lg bg-gray-50" required></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">หัวข้อกิจกรรม <span class="text-red-500">*</span></label><input type="text" id="actTitle" class="w-full p-3 border rounded-lg bg-gray-50" required></div>
                     </div>
-                </div>
-                
-                <div class="border-t pt-4">
-                    <label class="flex items-center font-bold text-blue-600 cursor-pointer">
-                        <input type="checkbox" id="actUseRoom" class="mr-2 w-4 h-4 text-blue-600"> 
-                        ต้องการจองห้องประชุมสำหรับกิจกรรมนี้ด้วย
-                    </label>
-                    <div id="actRoomContainer" class="hidden mt-3">
-                        <label class="block text-sm font-medium mb-1 text-gray-700">เลือกห้องประชุม <span class="text-red-500">*</span></label>
-                        <select id="actRoomSelect" class="w-full p-2 border rounded"></select>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">เวลาเริ่ม <span class="text-red-500">*</span></label><select id="actStartTime" class="w-full p-3 border rounded-lg bg-gray-50" required></select></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">เวลาสิ้นสุด <span class="text-red-500">*</span></label><select id="actEndTime" class="w-full p-3 border rounded-lg bg-gray-50" required></select></div>
                     </div>
-                </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">จำนวนคน <span class="text-red-500">*</span></label><input type="number" id="actAttendees" min="1" class="w-full p-3 border rounded-lg bg-gray-50" required></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">ผู้บันทึก <span class="text-red-500">*</span></label><input id="actBooker" type="text" required list="bookerList" class="w-full p-3 border rounded-lg bg-gray-50"></div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg border">
+                        <label class="block text-sm font-bold text-gray-700 mb-3">หมายเหตุ / อุปกรณ์</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm" id="actNotesContainer">
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" name="actNotes" value="Notebook" class="mr-3 w-4 h-4 text-purple-600"> Notebook</label>
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" name="actNotes" value="Projector" class="mr-3 w-4 h-4 text-purple-600"> Projector</label>
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" name="actNotes" value="ถ่ายภาพหมู่ร่วมกับป้าย" class="mr-3 w-4 h-4 text-purple-600"> ถ่ายภาพหมู่ร่วมกับป้าย</label>
+                            <label class="flex items-center cursor-pointer"><input type="checkbox" name="actNotes" value="ถ่ายภาพกิจกรรม" class="mr-3 w-4 h-4 text-purple-600"> ถ่ายภาพกิจกรรม</label>
+                            <label class="flex items-center cursor-pointer col-span-1 md:col-span-2">
+                                <input type="checkbox" id="actOtherNote" class="mr-3 w-4 h-4 text-purple-600"> อื่นๆ 
+                                <input type="text" id="actOtherNoteText" class="ml-3 p-2 border rounded-lg hidden flex-1" placeholder="ระบุรายละเอียดเพิ่มเติม">
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t pt-5">
+                        <label class="flex items-center font-bold text-purple-600 cursor-pointer bg-purple-50 p-3 rounded-lg border border-purple-200">
+                            <input type="checkbox" id="actUseRoom" class="mr-3 w-5 h-5 text-purple-600"> 
+                            ต้องการจองห้องประชุมสำหรับกิจกรรมนี้ด้วย
+                        </label>
+                        <div id="actRoomContainer" class="hidden mt-4 bg-gray-50 p-4 rounded-lg border">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">เลือกห้องประชุมที่ต้องการจอง <span class="text-red-500">*</span></label>
+                            <select id="actRoomSelect" class="w-full p-3 border rounded-lg"></select>
+                        </div>
+                    </div>
 
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-blue-700 shadow-md">บันทึกกิจกรรม</button>
-            </form>
+                    <div class="flex space-x-4 pt-4">
+                        <button type="submit" class="flex-1 btn-primary text-white py-3 rounded-lg font-bold text-lg shadow-lg"><i class="fas fa-save mr-2"></i>บันทึกกิจกรรม</button>
+                        <button type="button" id="cancelActivityBtn" class="flex-1 bg-gray-400 text-white py-3 rounded-lg font-bold text-lg hover:bg-gray-500"><i class="fas fa-times mr-2"></i>ยกเลิก</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
     <div id="dayModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col">
-            <div class="gradient-bg text-white p-6 rounded-t-xl"><h3 id="dayModalTitle" class="text-xl font-bold"><i class="fas fa-calendar-day mr-2"></i>รายละเอียดการจอง</h3></div>
+            <div class="gradient-bg text-white p-6 rounded-t-xl"><h3 id="dayModalTitle" class="text-xl font-bold"><i class="fas fa-calendar-day mr-2"></i>รายละเอียด</h3></div>
             <div class="flex-1 overflow-y-auto p-6"><div id="dayBookings" class="space-y-3"></div></div>
             <div class="p-6 pt-0"><button id="closeDayModal" class="w-full bg-gray-500 text-white py-3 rounded-lg font-medium"><i class="fas fa-times mr-2"></i>ปิด</button></div>
-        </div>
-    </div>
-
-    <div id="adminLoginModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div class="gradient-bg text-white p-6 rounded-t-xl"><h3 class="text-xl font-bold"><i class="fas fa-shield-alt mr-2"></i>เข้าสู่ระบบ Admin</h3></div>
-            <form id="adminLoginForm" class="p-6 space-y-4">
-                <div><label class="block text-sm font-medium mb-2">Username</label><input type="text" id="adminUsername" class="w-full p-3 border rounded-lg" required></div>
-                <div><label class="block text-sm font-medium mb-2">Password</label><input type="password" id="adminPassword" class="w-full p-3 border rounded-lg" required></div>
-                <div class="flex space-x-3 pt-4">
-                    <button type="submit" class="flex-1 btn-primary text-white py-3 rounded-lg font-medium">เข้าสู่ระบบ</button>
-                    <button type="button" id="cancelAdminLogin" class="flex-1 bg-gray-500 text-white py-3 rounded-lg font-medium">ยกเลิก</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div id="adminDashboard" class="fixed inset-0 bg-gray-50 hidden z-40 overflow-y-auto">
-        <div class="min-h-screen flex flex-col">
-            <header class="gradient-bg text-white shadow-lg flex-shrink-0">
-                <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <div class="flex items-center space-x-3"><i class="fas fa-tachometer-alt text-2xl"></i><h1 class="text-2xl font-bold">Admin Dashboard</h1></div>
-                    <button id="logoutBtn" class="bg-red-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-red-600 shadow-md"><i class="fas fa-sign-out-alt mr-2"></i>ออกจากระบบ</button>
-                </div>
-            </header>
-            <div class="flex-1 container mx-auto px-6 py-8">
-                <div class="bg-white rounded-xl shadow-lg p-6 mb-8 card-shadow">
-                    <h3 class="text-xl font-bold text-gray-800 mb-4"><i class="fas fa-chart-bar mr-2 text-purple-600"></i>สถิติการจองแต่ละห้อง</h3>
-                    <canvas id="bookingChart" style="max-height: 250px;"></canvas>
-                </div>
-                <div class="bg-white rounded-xl shadow-lg card-shadow">
-                    <div class="border-b border-gray-200">
-                        <nav class="flex space-x-8 px-6">
-                            <button class="admin-tab active py-4 border-b-2 border-purple-500 text-purple-600 font-medium" data-tab="pending"><i class="fas fa-clock mr-2"></i>รออนุมัติ</button>
-                            <button class="admin-tab py-4 border-b-2 border-transparent text-gray-500 hover:text-gray-700 font-medium" data-tab="approved"><i class="fas fa-check-circle mr-2"></i>ประวัติการจอง</button>
-                        </nav>
-                    </div>
-                    <div id="pendingTab" class="admin-tab-content p-6">
-                        <div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-50"><tr><th class="p-3">ห้อง</th><th class="p-3">วันที่/เวลา</th><th class="p-3">หัวข้อ</th><th class="p-3">ผู้จอง</th><th class="p-3">จัดการ</th></tr></thead><tbody id="pendingBookingsTable" class="divide-y text-sm"></tbody></table></div>
-                    </div>
-                    <div id="approvedTab" class="admin-tab-content p-6 hidden">
-                        <div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-50"><tr><th class="p-3">ห้อง</th><th class="p-3">วันที่/เวลา</th><th class="p-3">หัวข้อ</th><th class="p-3">ผู้จอง</th><th class="p-3">สถานะ</th><th class="p-3">ลบคำขอ</th></tr></thead><tbody id="approvedBookingsTable" class="divide-y text-sm"></tbody></table></div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -244,7 +258,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbz6ge0-lJwZSb7blTF4Qez6R_dj2hCxAA9j7bg_Aoy0wN1_GgWmB9y8Whs9oiEMC60-cw/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycby0dXZUA4OUk5_zlLsHYobIKOB1WnLO9M2liQLKKLMcQ89rlP1oYJxZWEZwUz1ZLvYkJQ/exec";
 
         async function callServer(action, data = {}) {
             try {
@@ -261,9 +275,15 @@
         }
 
         let currentDate = new Date();
-        let cachedBookings = [], cachedRooms = [], cachedUsers = [];
-        let filteredBookings = [];
-        let bookingChart = null;
+        let cachedBookings = [], cachedRooms = [], cachedUsers = [], cachedActivities = [];
+        let filteredBookings = [], filteredActivities = [];
+        
+        // สถานะการแบ่งหน้า
+        let bookingPage = 1, bookingLimit = 10;
+        let activityPage = 1, activityLimit = 10;
+        
+        // มุมมองปฏิทิน: 'bookings' หรือ 'activities'
+        let calendarView = 'bookings'; 
 
         const STATUS_UI = {
             'pending': { text: 'รออนุมัติ', color: 'bg-yellow-100 text-yellow-800' },
@@ -279,15 +299,18 @@
 
         async function initializeApp() {
             showLoading();
-            const [bRes, rRes, uRes, nRes] = await Promise.all([
+            const [bRes, rRes, uRes, nRes, aRes] = await Promise.all([
                 callServer('getAllBookings'), callServer('getAllRooms'), 
-                callServer('getAllUsers'), callServer('getBookerNames')
+                callServer('getAllUsers'), callServer('getBookerNames'),
+                callServer('getAllActivities')
             ]);
             
             cachedBookings = Array.isArray(bRes) ? bRes : [];
             cachedRooms = Array.isArray(rRes) ? rRes : [];
-            cachedUsers = Array.isArray(uRes) ? uRes : [];
+            cachedActivities = Array.isArray(aRes) ? aRes : [];
+            
             filteredBookings = [...cachedBookings];
+            filteredActivities = [...cachedActivities];
             
             if (Array.isArray(nRes)) {
                 document.getElementById('bookerList').innerHTML = nRes.map(n => `<option value="${n.replace(/"/g,'&quot;')}"></option>`).join('');
@@ -298,18 +321,26 @@
             updateDashboardStats();
             renderCalendar();
             renderBookingTable();
+            renderActivityTable();
             hideLoading();
         }
 
         function updateDashboardStats() {
-            const approved = cachedBookings.filter(b => b.status === 'approved').length;
-            const pending = cachedBookings.filter(b => b.status === 'pending').length;
-            const rejected = cachedBookings.filter(b => b.status === 'rejected').length;
-
             document.getElementById('totalBookings').textContent = cachedBookings.length;
-            document.getElementById('mainApprovedCount').textContent = approved;
-            document.getElementById('mainPendingCount').textContent = pending;
-            document.getElementById('mainRejectedCount').textContent = rejected;
+            document.getElementById('mainApprovedCount').textContent = cachedBookings.filter(b => b.status === 'approved').length;
+            document.getElementById('mainPendingCount').textContent = cachedBookings.filter(b => b.status === 'pending').length;
+            document.getElementById('mainRejectedCount').textContent = cachedBookings.filter(b => b.status === 'rejected').length;
+            document.getElementById('totalActivities').textContent = cachedActivities.length;
+        }
+
+        function setCalendarView(view) {
+            calendarView = view;
+            document.getElementById('calViewBookings').className = view === 'bookings' ? 'bg-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow' : 'bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium shadow hover:bg-gray-300';
+            document.getElementById('calViewActivities').className = view === 'activities' ? 'bg-blue-600 text-white px-4 py-2 rounded-lg font-medium shadow' : 'bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium shadow hover:bg-gray-300';
+            
+            // ซ่อน/แสดง Legend
+            document.getElementById('calendarLegend').style.display = view === 'bookings' ? 'flex' : 'none';
+            renderCalendar();
         }
 
         function renderCalendar() {
@@ -323,6 +354,8 @@
             const grid = document.getElementById('calendarGrid');
             grid.innerHTML = '';
 
+            const dataSource = calendarView === 'bookings' ? cachedBookings : cachedActivities;
+
             for (let i = 0; i < 42; i++) {
                 const cellDate = new Date(startDate);
                 cellDate.setDate(startDate.getDate() + i);
@@ -332,15 +365,21 @@
                 const day = String(cellDate.getDate()).padStart(2, '0');
                 const dateStr = `${year}-${month}-${day}`;
 
-                const dayBookings = cachedBookings.filter(b => b.date === dateStr);
+                const dayEvents = dataSource.filter(b => b.date === dateStr);
                 const cell = document.createElement('div');
                 cell.className = `calendar-day bg-white border rounded-lg p-2 min-h-[80px] cursor-pointer hover:bg-purple-50 ${cellDate.getMonth() !== currentDate.getMonth() ? 'text-gray-400 bg-gray-50' : ''}`;
                 
-                let eventsHtml = dayBookings.slice(0, 2).map(b => {
-                    const ui = STATUS_UI[b.status] || STATUS_UI['pending'];
-                    return `<div class="booking-event ${ui.color} truncate">${b.title}</div>`;
+                let eventsHtml = dayEvents.slice(0, 2).map(ev => {
+                    if(calendarView === 'bookings') {
+                        const ui = STATUS_UI[ev.status] || STATUS_UI['pending'];
+                        return `<div class="booking-event ${ui.color} truncate">${ev.title}</div>`;
+                    } else {
+                        // กิจกรรม สีฟ้า/เขียว
+                        return `<div class="booking-event bg-blue-100 text-blue-800 truncate">${ev.title}</div>`;
+                    }
                 }).join('');
-                if(dayBookings.length > 2) eventsHtml += `<div class="text-[10px] text-gray-500 mt-1">+${dayBookings.length - 2} เพิ่มเติม</div>`;
+                
+                if(dayEvents.length > 2) eventsHtml += `<div class="text-[10px] text-gray-500 mt-1">+${dayEvents.length - 2} เพิ่มเติม</div>`;
 
                 cell.innerHTML = `<div class="font-semibold text-sm mb-1">${cellDate.getDate()}</div><div>${eventsHtml}</div>`;
                 cell.onclick = () => showDayDetails(dateStr, cellDate);
@@ -349,37 +388,73 @@
         }
 
         function showDayDetails(dateStr, dateObj) {
-            const dayBookings = cachedBookings.filter(b => b.date === dateStr);
-            document.getElementById('dayModalTitle').innerHTML = `<i class="fas fa-calendar-day mr-2"></i>รายละเอียด - ${dateObj.toLocaleDateString('th-TH')}`;
+            const dataSource = calendarView === 'bookings' ? cachedBookings : cachedActivities;
+            const dayEvents = dataSource.filter(b => b.date === dateStr);
+            const viewName = calendarView === 'bookings' ? 'ห้องประชุม' : 'กิจกรรม';
+            
+            document.getElementById('dayModalTitle').innerHTML = `<i class="fas fa-calendar-day mr-2"></i>รายละเอียด${viewName} - ${dateObj.toLocaleDateString('th-TH')}`;
             const container = document.getElementById('dayBookings');
             
-            if (dayBookings.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-center py-4">ไม่มีการจองในวันนี้</p>';
+            if (dayEvents.length === 0) {
+                container.innerHTML = `<p class="text-gray-500 text-center py-4">ไม่มีรายการ${viewName}ในวันนี้</p>`;
             } else {
-                container.innerHTML = dayBookings.map(b => {
-                    const ui = STATUS_UI[b.status] || STATUS_UI['pending'];
-                    const roomName = cachedRooms.find(r => r.id == b.roomId)?.name || b.roomId;
-                    return `
-                    <div class="border rounded-lg p-4 mb-2">
-                        <div class="flex justify-between items-start mb-2"><h4 class="font-bold">${b.title}</h4><span class="px-2 py-1 rounded-full text-[10px] ${ui.color}">${ui.text}</span></div>
-                        <div class="text-sm text-gray-600 space-y-1">
-                            <p><i class="fas fa-door-open mr-2"></i>${roomName}</p>
-                            <p><i class="fas fa-clock mr-2"></i>${b.startTime} - ${b.endTime}</p>
-                            <p><i class="fas fa-user mr-2"></i>ผู้จอง: ${b.booker || '-'}</p>
-                            ${b.notes ? `<p><i class="fas fa-sticky-note mr-2"></i>${b.notes}</p>` : ''}
-                        </div>
-                    </div>`;
+                container.innerHTML = dayEvents.map(b => {
+                    if (calendarView === 'bookings') {
+                        const ui = STATUS_UI[b.status] || STATUS_UI['pending'];
+                        const roomName = cachedRooms.find(r => r.id == b.roomId)?.name || b.roomId;
+                        return `
+                        <div class="border rounded-lg p-4 mb-2">
+                            <div class="flex justify-between items-start mb-2"><h4 class="font-bold">${b.title}</h4><span class="px-2 py-1 rounded-full text-[10px] ${ui.color}">${ui.text}</span></div>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <p><i class="fas fa-door-open mr-2"></i>${roomName}</p>
+                                <p><i class="fas fa-clock mr-2"></i>${b.startTime} - ${b.endTime}</p>
+                                <p><i class="fas fa-user mr-2"></i>ผู้จอง: ${b.booker || '-'}</p>
+                            </div>
+                        </div>`;
+                    } else {
+                        return `
+                        <div class="border rounded-lg p-4 mb-2 border-blue-200 bg-blue-50">
+                            <h4 class="font-bold text-blue-800 mb-2">${b.title}</h4>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <p><i class="fas fa-clock mr-2"></i>${b.startTime} - ${b.endTime}</p>
+                                <p><i class="fas fa-users mr-2"></i>จำนวน: ${b.attendees} คน</p>
+                                <p><i class="fas fa-user mr-2"></i>ผู้บันทึก: ${b.booker || '-'}</p>
+                                ${b.notes ? `<p><i class="fas fa-sticky-note mr-2"></i>${b.notes}</p>` : ''}
+                            </div>
+                        </div>`;
+                    }
                 }).join('');
             }
             document.getElementById('dayModal').classList.remove('hidden');
         }
 
+        // ==========================
+        // Pagination & Tables
+        // ==========================
+        function changeBookingLimit() {
+            bookingLimit = parseInt(document.getElementById('bookingLimit').value);
+            bookingPage = 1; renderBookingTable();
+        }
+        function changeBookingPage(dir) {
+            const maxPage = Math.ceil(filteredBookings.length / bookingLimit) || 1;
+            bookingPage += dir;
+            if (bookingPage < 1) bookingPage = 1;
+            if (bookingPage > maxPage) bookingPage = maxPage;
+            renderBookingTable();
+        }
+        
         function renderBookingTable() {
             const tbody = document.getElementById('bookingTable');
-            tbody.innerHTML = filteredBookings.map(b => {
+            const totalPages = Math.ceil(filteredBookings.length / bookingLimit) || 1;
+            document.getElementById('bookingPageInfo').textContent = `หน้า ${bookingPage}/${totalPages} (รวม ${filteredBookings.length})`;
+            
+            const start = (bookingPage - 1) * bookingLimit;
+            const paginated = filteredBookings.slice(start, start + bookingLimit);
+            
+            tbody.innerHTML = paginated.map(b => {
                 const roomName = cachedRooms.find(r => r.id == b.roomId)?.name || b.roomId;
                 const ui = STATUS_UI[b.status] || STATUS_UI['pending'];
-                return `<tr class="border-b hover:bg-gray-50">
+                return `<tr class="border-b hover:bg-gray-100 transition-colors">
                     <td class="p-3 text-sm font-medium">${roomName}</td>
                     <td class="p-3 text-sm">${new Date(b.date).toLocaleDateString('th-TH')}<br><span class="text-gray-500">${b.startTime}-${b.endTime}</span></td>
                     <td class="p-3 text-sm">${b.title}</td>
@@ -389,29 +464,79 @@
             }).join('') || '<tr><td colspan="5" class="p-4 text-center text-gray-500">ไม่มีข้อมูล</td></tr>';
         }
 
+        function changeActivityLimit() {
+            activityLimit = parseInt(document.getElementById('activityLimit').value);
+            activityPage = 1; renderActivityTable();
+        }
+        function changeActivityPage(dir) {
+            const maxPage = Math.ceil(filteredActivities.length / activityLimit) || 1;
+            activityPage += dir;
+            if (activityPage < 1) activityPage = 1;
+            if (activityPage > maxPage) activityPage = maxPage;
+            renderActivityTable();
+        }
+        
+        function renderActivityTable() {
+            const tbody = document.getElementById('activityTable');
+            const totalPages = Math.ceil(filteredActivities.length / activityLimit) || 1;
+            document.getElementById('activityPageInfo').textContent = `หน้า ${activityPage}/${totalPages} (รวม ${filteredActivities.length})`;
+            
+            const start = (activityPage - 1) * activityLimit;
+            const paginated = filteredActivities.slice(start, start + activityLimit);
+            
+            tbody.innerHTML = paginated.map(a => {
+                return `<tr class="border-b hover:bg-gray-100 transition-colors">
+                    <td class="p-3 text-sm">${new Date(a.date).toLocaleDateString('th-TH')}<br><span class="text-gray-500">${a.startTime}-${a.endTime}</span></td>
+                    <td class="p-3 text-sm font-medium text-blue-700">${a.title}</td>
+                    <td class="p-3 text-sm">${a.attendees}</td>
+                    <td class="p-3 text-sm">${a.booker}</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="4" class="p-4 text-center text-gray-500">ไม่มีข้อมูลกิจกรรม</td></tr>';
+        }
+
+        function applyBookingFilters() {
+            const search = document.getElementById('searchBooking').value.toLowerCase();
+            const room = document.getElementById('filterRoom').value;
+            const status = document.getElementById('filterStatus').value;
+            filteredBookings = cachedBookings.filter(b => (!search || b.title.toLowerCase().includes(search)) && (!room || b.roomId == room) && (!status || b.status == status) );
+            bookingPage = 1; renderBookingTable();
+        }
+        function clearBookingFilters() { document.getElementById('searchBooking').value=''; document.getElementById('filterRoom').value=''; document.getElementById('filterStatus').value=''; applyBookingFilters(); }
+
+        function applyActivityFilters() {
+            const search = document.getElementById('searchActivity').value.toLowerCase();
+            filteredActivities = cachedActivities.filter(a => (!search || a.title.toLowerCase().includes(search)));
+            activityPage = 1; renderActivityTable();
+        }
+        function clearActivityFilters() { document.getElementById('searchActivity').value=''; applyActivityFilters(); }
+
+        // ==========================
+        // Event Setup & Form Submit
+        // ==========================
         function setupEventListeners() {
             document.getElementById('prevMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); };
             document.getElementById('nextMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); };
             
-            // หน้าต่างจองห้อง
+            // จองห้อง
             document.getElementById('bookingBtn').onclick = () => {
                 document.getElementById('roomSelect').innerHTML = '<option value="">เลือกห้อง</option>' + cachedRooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-                document.getElementById('bookingForm').reset();
-                resetNotesUI();
+                document.getElementById('bookingForm').reset(); resetNotesUI();
                 document.getElementById('bookingModal').classList.remove('hidden');
             };
             document.getElementById('cancelBooking').onclick = () => document.getElementById('bookingModal').classList.add('hidden');
+            document.getElementById('cancelBookingIcon').onclick = () => document.getElementById('bookingModal').classList.add('hidden');
             
-            // หน้าต่างบันทึกกิจกรรม
+            // กิจกรรม
             document.getElementById('activityBtn').onclick = () => {
                 document.getElementById('actRoomSelect').innerHTML = '<option value="">เลือกห้อง</option>' + cachedRooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-                document.getElementById('activityForm').reset();
-                resetNotesUI();
+                document.getElementById('activityForm').reset(); resetNotesUI();
                 document.getElementById('actRoomContainer').classList.add('hidden');
                 document.getElementById('actRoomSelect').required = false;
                 document.getElementById('activityModal').classList.remove('hidden');
             };
-            document.getElementById('cancelActivity').onclick = () => document.getElementById('activityModal').classList.add('hidden');
+            document.getElementById('cancelActivityBtn').onclick = () => document.getElementById('activityModal').classList.add('hidden');
+            document.getElementById('cancelActivityIcon').onclick = () => document.getElementById('activityModal').classList.add('hidden');
+            
             document.getElementById('actUseRoom').onchange = (e) => {
                 document.getElementById('actRoomContainer').classList.toggle('hidden', !e.target.checked);
                 document.getElementById('actRoomSelect').required = e.target.checked;
@@ -419,149 +544,44 @@
 
             document.getElementById('closeDayModal').onclick = () => document.getElementById('dayModal').classList.add('hidden');
             
-            // แผง Admin
-            document.getElementById('adminBtn').onclick = () => document.getElementById('adminLoginModal').classList.remove('hidden');
-            document.getElementById('cancelAdminLogin').onclick = () => document.getElementById('adminLoginModal').classList.add('hidden');
-            document.getElementById('logoutBtn').onclick = () => document.getElementById('adminDashboard').classList.add('hidden');
-
             document.getElementById('bookingForm').onsubmit = handleBookingSubmit;
             document.getElementById('activityForm').onsubmit = handleActivitySubmit;
-            document.getElementById('adminLoginForm').onsubmit = handleAdminLogin;
-
-            document.querySelectorAll('.admin-tab').forEach(btn => {
-                btn.onclick = (e) => {
-                    document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active', 'border-purple-500', 'text-purple-600'));
-                    e.currentTarget.classList.add('active', 'border-purple-500', 'text-purple-600');
-                    document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.add('hidden'));
-                    document.getElementById(e.currentTarget.dataset.tab + 'Tab').classList.remove('hidden');
-                };
-            });
         }
 
         async function handleBookingSubmit(e) {
-            e.preventDefault();
-            showLoading();
+            e.preventDefault(); showLoading();
             const data = {
-                roomId: document.getElementById('roomSelect').value,
-                date: document.getElementById('bookingDate').value,
-                startTime: document.getElementById('startTime').value,
-                endTime: document.getElementById('endTime').value,
-                title: document.getElementById('meetingTitle').value,
-                attendees: document.getElementById('attendees').value,
-                bookerName: document.getElementById('bookerName').value,
-                notes: getSelectedNotes()
+                roomId: document.getElementById('roomSelect').value, date: document.getElementById('bookingDate').value,
+                startTime: document.getElementById('startTime').value, endTime: document.getElementById('endTime').value,
+                title: document.getElementById('meetingTitle').value, attendees: document.getElementById('attendees').value,
+                bookerName: document.getElementById('bookerName').value, notes: getSelectedNotes()
             };
             const res = await callServer('createBooking', data);
-            if (res.success) {
-                Swal.fire('สำเร็จ', 'ส่งคำขอจองห้องเรียบร้อย (รออนุมัติ)', 'success');
-                document.getElementById('bookingModal').classList.add('hidden');
-                initializeApp();
-            } else { hideLoading(); Swal.fire('ผิดพลาด', res.message, 'error'); }
+            if (res.success) { Swal.fire('สำเร็จ', 'ส่งคำขอจองห้องเรียบร้อย', 'success'); document.getElementById('bookingModal').classList.add('hidden'); initializeApp(); }
+            else { hideLoading(); Swal.fire('ผิดพลาด', res.message, 'error'); }
         }
 
         async function handleActivitySubmit(e) {
-            e.preventDefault();
-            showLoading();
+            e.preventDefault(); showLoading();
             const data = {
-                date: document.getElementById('actDate').value,
-                startTime: document.getElementById('actStartTime').value,
-                endTime: document.getElementById('actEndTime').value,
-                title: document.getElementById('actTitle').value,
-                attendees: document.getElementById('actAttendees').value,
-                bookerName: document.getElementById('actBooker').value,
-                notes: getActSelectedNotes(),
-                useRoom: document.getElementById('actUseRoom').checked,
-                roomId: document.getElementById('actRoomSelect').value
+                date: document.getElementById('actDate').value, startTime: document.getElementById('actStartTime').value,
+                endTime: document.getElementById('actEndTime').value, title: document.getElementById('actTitle').value,
+                attendees: document.getElementById('actAttendees').value, bookerName: document.getElementById('actBooker').value,
+                notes: getActSelectedNotes(), useRoom: document.getElementById('actUseRoom').checked, roomId: document.getElementById('actRoomSelect').value
             };
             const res = await callServer('createActivity', data);
-            if(res.success) {
-                Swal.fire('สำเร็จ', res.message, 'success');
-                document.getElementById('activityModal').classList.add('hidden');
-                initializeApp();
-            } else { hideLoading(); Swal.fire('ผิดพลาด', res.message, 'error'); }
-        }
-
-        async function handleAdminLogin(e) {
-            e.preventDefault();
-            showLoading();
-            const res = await callServer('validateUser', { username: document.getElementById('adminUsername').value, password: document.getElementById('adminPassword').value });
-            hideLoading();
-            if (res.success) {
-                document.getElementById('adminLoginModal').classList.add('hidden');
-                document.getElementById('adminDashboard').classList.remove('hidden');
-                renderAdminDashboard();
-            } else { Swal.fire('Error', res.message, 'error'); }
-        }
-
-        function renderAdminDashboard() {
-            const pending = cachedBookings.filter(b => b.status === 'pending');
-            document.getElementById('pendingBookingsTable').innerHTML = pending.map(b => `
-                <tr class="border-b">
-                    <td class="p-3">${cachedRooms.find(r => r.id == b.roomId)?.name || b.roomId}</td>
-                    <td class="p-3">${b.date} <br>${b.startTime}-${b.endTime}</td>
-                    <td class="p-3">${b.title}</td><td class="p-3">${b.booker}</td>
-                    <td class="p-3">
-                        <button onclick="updateBookingStatus(${b.id}, 'approved')" class="bg-green-500 text-white px-2 py-1 rounded text-xs mr-1">อนุมัติ</button>
-                        <button onclick="updateBookingStatus(${b.id}, 'rejected')" class="bg-red-500 text-white px-2 py-1 rounded text-xs">ไม่อนุมัติ</button>
-                    </td>
-                </tr>`).join('') || '<tr><td colspan="5" class="p-4 text-center text-gray-500">ไม่มีการจองที่รออนุมัติ</td></tr>';
-            
-            document.getElementById('approvedBookingsTable').innerHTML = cachedBookings.map(b => `
-                <tr class="border-b">
-                    <td class="p-3">${cachedRooms.find(r => r.id == b.roomId)?.name}</td>
-                    <td class="p-3">${b.date} <br>${b.startTime}-${b.endTime}</td>
-                    <td class="p-3">${b.title}</td><td class="p-3">${b.booker}</td>
-                    <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] ${STATUS_UI[b.status]?.color}">${STATUS_UI[b.status]?.text}</span></td>
-                    <td class="p-3"><button onclick="deleteBookingReq(${b.id})" class="bg-red-600 text-white px-2 py-1 rounded text-xs"><i class="fas fa-trash"></i> ลบ</button></td>
-                </tr>`).join('');
-            
-            renderChart();
-        }
-
-        async function updateBookingStatus(id, status) {
-            showLoading();
-            const res = await callServer('updateBookingStatus', { bookingId: id, status: status });
-            if(res.success) { await initializeApp(); renderAdminDashboard(); } else { hideLoading(); Swal.fire('Error', res.message, 'error'); }
-        }
-
-        async function deleteBookingReq(id) {
-            if(!confirm('ยืนยันการลบคำขอนี้? ข้อมูลจะถูกลบออกจากปฏิทินด้วย')) return;
-            showLoading();
-            const res = await callServer('deleteBooking', { bookingId: id });
-            if(res.success) { await initializeApp(); renderAdminDashboard(); } else { hideLoading(); Swal.fire('Error', res.message, 'error'); }
-        }
-
-        async function renderChart() {
-            const res = await callServer('getBookingChartData');
-            if(res && res.labels) {
-                if (bookingChart) bookingChart.destroy();
-                const ctx = document.getElementById('bookingChart').getContext('2d');
-                bookingChart = new Chart(ctx, { type: 'bar', data: { labels: res.labels, datasets: [{ label: 'จำนวนการจอง', data: res.data, backgroundColor: 'rgba(147, 51, 234, 0.6)' }] } });
-            }
+            if(res.success) { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('activityModal').classList.add('hidden'); initializeApp(); }
+            else { hideLoading(); Swal.fire('ผิดพลาด', res.message, 'error'); }
         }
 
         function generateTimeOptions() {
             let opts = '<option value="">เลือกเวลา</option>';
             for(let h=8; h<=18; h++) { ['00','30'].forEach(m => { opts += `<option value="${h}:${m}">${h}:${m}</option>`; }); }
-            document.getElementById('startTime').innerHTML = opts; 
-            document.getElementById('endTime').innerHTML = opts;
-            document.getElementById('actStartTime').innerHTML = opts; 
-            document.getElementById('actEndTime').innerHTML = opts;
+            document.getElementById('startTime').innerHTML = opts; document.getElementById('endTime').innerHTML = opts;
+            document.getElementById('actStartTime').innerHTML = opts; document.getElementById('actEndTime').innerHTML = opts;
         }
 
-        function loadFilterOptions() {
-            document.getElementById('filterRoom').innerHTML = '<option value="">ทุกห้อง</option>' + cachedRooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-        }
-
-        function applyFilters() {
-            const search = document.getElementById('searchTitle').value.toLowerCase();
-            const room = document.getElementById('filterRoom').value;
-            const status = document.getElementById('filterStatus').value;
-            filteredBookings = cachedBookings.filter(b => (!search || b.title.toLowerCase().includes(search)) && (!room || b.roomId == room) && (!status || b.status == status) );
-            renderBookingTable();
-        }
-        function clearFilters() { document.getElementById('searchTitle').value=''; document.getElementById('filterRoom').value=''; document.getElementById('filterStatus').value=''; applyFilters(); }
-
+        function loadFilterOptions() { document.getElementById('filterRoom').innerHTML = '<option value="">ทุกห้อง</option>' + cachedRooms.map(r => `<option value="${r.id}">${r.name}</option>`).join(''); }
         function initNotesUI() {
             document.getElementById('otherNote').onchange = (e) => { const text = document.getElementById('otherNoteText'); text.classList.toggle('hidden', !e.target.checked); if(!e.target.checked) text.value = ''; };
             document.getElementById('actOtherNote').onchange = (e) => { const text = document.getElementById('actOtherNoteText'); text.classList.toggle('hidden', !e.target.checked); if(!e.target.checked) text.value = ''; };
@@ -576,22 +596,9 @@
             const other = document.getElementById('actOtherNote'); if(other && other.checked && document.getElementById('actOtherNoteText').value) sel.push('อื่นๆ: ' + document.getElementById('actOtherNoteText').value);
             return sel.join(', ');
         }
-        function resetNotesUI() { 
-            document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked=false); 
-            document.getElementById('otherNoteText').classList.add('hidden'); 
-            document.getElementById('actOtherNoteText').classList.add('hidden'); 
-        }
-
+        function resetNotesUI() { document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked=false); document.getElementById('otherNoteText').classList.add('hidden'); document.getElementById('actOtherNoteText').classList.add('hidden'); }
         function showLoading() { document.getElementById('loadingSpinner').classList.remove('hidden'); }
         function hideLoading() { document.getElementById('loadingSpinner').classList.add('hidden'); }
-
-        function exportBookingsToExcel() {
-            const data = filteredBookings.map(b => ({ 'ห้อง': cachedRooms.find(r => r.id == b.roomId)?.name, 'วันที่': b.date, 'เวลา': `${b.startTime}-${b.endTime}`, 'หัวข้อ': b.title, 'ผู้จอง': b.booker, 'สถานะ': STATUS_UI[b.status]?.text }));
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, 'การจอง');
-            XLSX.writeFile(wb, 'Booking_Report.xlsx');
-        }
     </script>
 </body>
 </html>
