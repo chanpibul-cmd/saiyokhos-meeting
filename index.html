@@ -300,6 +300,9 @@
         // ==========================================
         // CALENDAR & UI RENDERERS
         // ==========================================
+       // ==========================================
+        // CALENDAR & UI RENDERERS
+        // ==========================================
         function renderCalendar() {
             const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'];
             document.getElementById('currentMonth').textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear() + 543}`;
@@ -314,7 +317,12 @@
             for (let i = 0; i < 42; i++) {
                 const cellDate = new Date(startDate);
                 cellDate.setDate(startDate.getDate() + i);
-                const dateStr = cellDate.toLocaleDateString('en-CA'); // format: yyyy-mm-dd
+                
+                // ปรับฟอร์แมตวันที่ให้ตรงกับฐานข้อมูล (YYYY-MM-DD) เพื่อป้องกันปัญหา Timezone
+                const year = cellDate.getFullYear();
+                const month = String(cellDate.getMonth() + 1).padStart(2, '0');
+                const day = String(cellDate.getDate()).padStart(2, '0');
+                const dateStr = `${year}-${month}-${day}`;
 
                 const dayBookings = cachedBookings.filter(b => b.date === dateStr);
                 const cell = document.createElement('div');
@@ -332,10 +340,9 @@
             }
         }
 
-        async function showDayDetails(dateStr, dateObj) {
-            showLoading();
-            const dayBookings = await callServer('getDayBookings', dateStr) || [];
-            hideLoading();
+        // ดึงข้อมูลจาก Cache โดยตรง ทำให้กดแล้วเด้งขึ้นมาทันที ไม่ต้องรอโหลด
+        function showDayDetails(dateStr, dateObj) {
+            const dayBookings = cachedBookings.filter(b => b.date === dateStr);
 
             document.getElementById('dayModalTitle').innerHTML = `<i class="fas fa-calendar-day mr-2"></i>รายละเอียด - ${dateObj.toLocaleDateString('th-TH')}`;
             const container = document.getElementById('dayBookings');
@@ -345,11 +352,13 @@
             } else {
                 container.innerHTML = dayBookings.map(b => {
                     const ui = STATUS_UI[b.status] || STATUS_UI['pending'];
+                    const roomName = cachedRooms.find(r => r.id == b.roomId)?.name || b.roomId;
+                    
                     return `
                     <div class="border rounded-lg p-4 mb-2">
                         <div class="flex justify-between items-start mb-2"><h4 class="font-bold">${b.title}</h4><span class="px-2 py-1 rounded-full text-[10px] ${ui.color}">${ui.text}</span></div>
                         <div class="text-sm text-gray-600 space-y-1">
-                            <p><i class="fas fa-door-open mr-2"></i>${b.roomName}</p>
+                            <p><i class="fas fa-door-open mr-2"></i>${roomName}</p>
                             <p><i class="fas fa-clock mr-2"></i>${b.startTime} - ${b.endTime}</p>
                             <p><i class="fas fa-user mr-2"></i>ผู้จอง: ${b.booker || '-'}</p>
                             ${b.notes ? `<p><i class="fas fa-sticky-note mr-2"></i>${b.notes}</p>` : ''}
