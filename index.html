@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจองห้องประชุม</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * { font-family: 'Kanit', sans-serif; } [cite: 278]
+        .calendar-day { transition: all 0.3s ease; } [cite: 279]
+        .calendar-day:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); } [cite: 280]
+        .spinner { animation: spin 1s linear infinite; } [cite: 282]
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } } [cite: 283]
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); } [cite: 285]
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; } [cite: 287]
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <header class="gradient-bg text-white shadow-lg sticky top-0 z-40">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold"><i class="fas fa-calendar-alt mr-2"></i>ระบบจองห้องประชุม</h1> [cite: 295, 296]
+            <div class="flex space-x-3">
+                <button id="bookingBtn" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-medium shadow-md">
+                    <i class="fas fa-plus mr-2"></i>จองห้อง [cite: 296, 297]
+                </button>
+                <button id="adminBtn" class="bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium shadow-md">
+                    <i class="fas fa-user-shield mr-2"></i>Admin [cite: 297]
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow p-6 flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4"><i class="fas fa-calendar-alt text-2xl"></i></div>
+                <div><p class="text-sm text-gray-600">การจองทั้งหมด</p><p id="totalBookings" class="text-2xl font-bold">0</p></div> [cite: 304, 305]
+            </div>
+            <div class="bg-white rounded-xl shadow p-6 flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600 mr-4"><i class="fas fa-check-circle text-2xl"></i></div>
+                <div><p class="text-sm text-gray-600">อนุมัติแล้ว</p><p id="mainApprovedCount" class="text-2xl font-bold">0</p></div> [cite: 306, 307]
+            </div>
+            <div class="bg-white rounded-xl shadow p-6 flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600 mr-4"><i class="fas fa-clock text-2xl"></i></div>
+                <div><p class="text-sm text-gray-600">รออนุมัติ</p><p id="mainPendingCount" class="text-2xl font-bold">0</p></div> [cite: 308, 309, 310]
+            </div>
+            <div class="bg-white rounded-xl shadow p-6 flex items-center">
+                <div class="p-3 rounded-full bg-red-100 text-red-600 mr-4"><i class="fas fa-times-circle text-2xl"></i></div>
+                <div><p class="text-sm text-gray-600">ไม่อนุมัติ</p><p id="mainRejectedCount" class="text-2xl font-bold">0</p></div> [cite: 311, 312]
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <button id="prevMonth" class="btn-primary px-4 py-2 rounded-lg"><i class="fas fa-chevron-left"></i></button> [cite: 299]
+                <h2 id="currentMonth" class="text-2xl font-bold text-gray-800"></h2> [cite: 299]
+                <button id="nextMonth" class="btn-primary px-4 py-2 rounded-lg"><i class="fas fa-chevron-right"></i></button> [cite: 300]
+            </div>
+            <div class="grid grid-cols-7 gap-2 text-center font-semibold text-gray-600 mb-2">
+                <div>อา</div><div>จ</div><div>อ</div><div>พ</div><div>พฤ</div><div>ศ</div><div>ส</div> [cite: 301, 302]
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-7 gap-2"></div> [cite: 303]
+        </div>
+
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h3 class="text-xl font-bold mb-4"><i class="fas fa-list mr-2 text-purple-600"></i>รายการการจองล่าสุด</h3> [cite: 313]
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-gray-50 text-gray-600">
+                        <tr><th class="p-3">ห้อง</th><th class="p-3">วันที่/เวลา</th><th class="p-3">หัวข้อ</th><th class="p-3">ผู้จอง</th><th class="p-3">สถานะ</th></tr> [cite: 323, 324, 325, 326, 327]
+                    </thead>
+                    <tbody id="bookingTable" class="divide-y text-sm"></tbody> [cite: 331]
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="bookingModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div class="gradient-bg text-white p-4 flex justify-between">
+                <h3 class="text-xl font-bold"><i class="fas fa-calendar-plus mr-2"></i>จองห้องประชุม</h3> [cite: 336]
+                <button id="cancelBooking" class="hover:text-gray-200"><i class="fas fa-times"></i></button> [cite: 356]
+            </div>
+            <form id="bookingForm" class="p-6 space-y-4">
+                <div><label class="block text-sm font-medium mb-1">ห้อง</label><select id="roomSelect" class="w-full p-2 border rounded" required></select></div> [cite: 337, 338]
+                <div><label class="block text-sm font-medium mb-1">วันที่</label><input type="date" id="bookingDate" class="w-full p-2 border rounded" required></div> [cite: 339]
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium mb-1">เวลาเริ่ม</label><select id="startTime" class="w-full p-2 border rounded" required></select></div> [cite: 340, 341]
+                    <div><label class="block text-sm font-medium mb-1">เวลาสิ้นสุด</label><select id="endTime" class="w-full p-2 border rounded" required></select></div> [cite: 342]
+                </div>
+                <div><label class="block text-sm font-medium mb-1">หัวข้อ</label><input type="text" id="meetingTitle" class="w-full p-2 border rounded" required></div> [cite: 344]
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="block text-sm font-medium mb-1">จำนวนคน</label><input type="number" id="attendees" class="w-full p-2 border rounded" required></div> [cite: 345]
+                    <div><label class="block text-sm font-medium mb-1">ผู้จอง</label><input id="bookerName" type="text" class="w-full p-2 border rounded" required list="bookerList"></div> [cite: 354]
+                    <datalist id="bookerList"></datalist> [cite: 354]
+                </div>
+                <button type="submit" class="w-full btn-primary py-3 rounded-lg font-bold">บันทึกการจอง</button> [cite: 355]
+            </form>
+        </div>
+    </div>
+
+    <div id="adminLoginModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm">
+            <div class="gradient-bg text-white p-4"><h3 class="text-xl font-bold">Admin Login</h3></div> [cite: 362]
+            <form id="adminLoginForm" class="p-6 space-y-4">
+                <input type="text" id="adminUsername" placeholder="Username" class="w-full p-3 border rounded" required> [cite: 363]
+                <input type="password" id="adminPassword" placeholder="Password" class="w-full p-3 border rounded" required> [cite: 364]
+                <button type="submit" class="w-full btn-primary py-3 rounded-lg font-bold">เข้าสู่ระบบ</button> [cite: 365]
+                <button type="button" id="cancelAdminLogin" class="w-full text-gray-500 mt-2">ยกเลิก</button> [cite: 366]
+            </form>
+        </div>
+    </div>
+
+    <div id="loadingSpinner" class="fixed inset-0 bg-black/50 hidden z-[100] flex items-center justify-center">
+        <div class="bg-white p-4 rounded-lg flex items-center space-x-3"><i class="fas fa-spinner spinner text-purple-600 text-xl"></i><span class="font-bold">กำลังดำเนินการ...</span></div> [cite: 444]
+    </div>
+
+    <script>
+        // === การเชื่อมต่อ API (แทน google.script.run) ===
+        const API_URL = "https://script.google.com/macros/s/AKfycbyiwoyEXRdhfQKJpVUYkClZy_PLSWyUzKTsu9ArOYATsj6RZ-LLROrYqcXyufMRO7pU7Q/exec";
+
+        async function callServer(action, data = {}) {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // ใช้ text/plain เพื่อเลี่ยงปัญหา CORS
+                    body: JSON.stringify({ action, data })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // === ตัวแปร Global ===
+        let cachedBookings = [], cachedRooms = [], currentDate = new Date(); [cite: 445, 446]
+
+        // === Initialize ===
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeApp(); [cite: 454]
+        });
+
+        async function initializeApp() {
+            showLoading(); [cite: 452]
+            try {
+                // โหลดข้อมูลทั้งหมดพร้อมกัน
+                const [bookingsRes, roomsRes, namesRes] = await Promise.all([
+                    callServer('getAllBookings'),
+                    callServer('getAllRooms'),
+                    callServer('getBookerNames')
+                ]);
+
+                cachedBookings = bookingsRes || []; [cite: 458]
+                cachedRooms = roomsRes || []; [cite: 461]
+                
+                const dl = document.getElementById('bookerList'); [cite: 467]
+                if (namesRes) dl.innerHTML = namesRes.map(n => `<option value="${n}"></option>`).join(''); [cite: 468]
+
+                updateMainDashboardStats(); [cite: 454]
+                renderCalendar(); [cite: 454]
+                renderBookingTable(); [cite: 760]
+                setupEventListeners(); [cite: 454]
+                generateTimeOptions(); [cite: 455]
+            } catch (error) {
+                Swal.fire('Error', 'ไม่สามารถเชื่อมต่อฐานข้อมูลได้', 'error'); [cite: 453]
+            } finally {
+                hideLoading(); [cite: 452]
+            }
+        }
+
+        // === การแสดงผล (Render) ===
+        function updateMainDashboardStats() {
+            document.getElementById('totalBookings').textContent = cachedBookings.length; [cite: 740]
+            document.getElementById('mainApprovedCount').textContent = cachedBookings.filter(b => b.status === 'approved').length; [cite: 741]
+            document.getElementById('mainPendingCount').textContent = cachedBookings.filter(b => b.status === 'pending').length; [cite: 741]
+            document.getElementById('mainRejectedCount').textContent = cachedBookings.filter(b => b.status === 'rejected').length; [cite: 741]
+        }
+
+        function renderCalendar() {
+            const monthNames = ['มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน', 'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม']; [cite: 495]
+            document.getElementById('currentMonth').textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear() + 543}`; [cite: 496]
+
+            const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); [cite: 496]
+            const startDate = new Date(firstDay); [cite: 497]
+            startDate.setDate(startDate.getDate() - firstDay.getDay()); [cite: 497]
+
+            const grid = document.getElementById('calendarGrid'); [cite: 498]
+            grid.innerHTML = ''; [cite: 498]
+
+            for (let i = 0; i < 42; i++) { [cite: 499]
+                const cellDate = new Date(startDate); [cite: 499]
+                cellDate.setDate(startDate.getDate() + i); [cite: 500]
+                const dateStr = cellDate.toLocaleDateString('en-CA'); // yyyy-mm-dd
+
+                const dayEvents = cachedBookings.filter(b => b.date === dateStr); [cite: 500]
+                const cell = document.createElement('div'); [cite: 501]
+                cell.className = `calendar-day bg-white border p-2 min-h-[80px] rounded hover:bg-purple-50 ${cellDate.getMonth() !== currentDate.getMonth() ? 'text-gray-400 opacity-50' : ''}`; [cite: 501]
+                
+                cell.innerHTML = `<div class="font-bold text-sm mb-1">${cellDate.getDate()}</div>`; [cite: 503]
+                dayEvents.slice(0, 2).forEach(ev => { [cite: 503]
+                    const color = ev.status === 'approved' ? 'bg-green-100 text-green-800' : (ev.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800');
+                    cell.innerHTML += `<div class="text-[10px] p-1 mb-1 rounded truncate ${color}">${ev.title}</div>`; [cite: 503]
+                });
+                grid.appendChild(cell); [cite: 506]
+            }
+        }
+
+        function renderBookingTable() {
+            const table = document.getElementById('bookingTable'); [cite: 789]
+            table.innerHTML = cachedBookings.map(b => `
+                <tr class="hover:bg-gray-50">
+                    <td class="p-3">${cachedRooms.find(r => r.id == b.roomId)?.name || b.roomId}</td>
+                    <td class="p-3">${b.date} <br><span class="text-xs text-gray-500">${b.startTime}-${b.endTime}</span></td>
+                    <td class="p-3">${b.title}</td>
+                    <td class="p-3">${b.booker}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] ${b.status === 'approved' ? 'bg-green-100 text-green-800' : (b.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800')}">${b.status}</span></td>
+                </tr>
+            `).join(''); [cite: 796, 797, 798, 799, 800, 801]
+        }
+
+        // === Interaction & Submit ===
+        function setupEventListeners() { [cite: 472]
+            document.getElementById('prevMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); }; [cite: 472]
+            document.getElementById('nextMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); }; [cite: 474]
+            document.getElementById('bookingBtn').onclick = () => {
+                document.getElementById('roomSelect').innerHTML = '<option value="">เลือกห้อง</option>' + cachedRooms.map(r => `<option value="${r.id}">${r.name}</option>`).join(''); [cite: 529]
+                document.getElementById('bookingModal').classList.remove('hidden'); [cite: 526]
+            };
+            document.getElementById('cancelBooking').onclick = () => document.getElementById('bookingModal').classList.add('hidden'); [cite: 527]
+            
+            // หน้าฟอร์มล็อกอิน
+            document.getElementById('adminBtn').onclick = () => document.getElementById('adminLoginModal').classList.remove('hidden'); [cite: 554]
+            document.getElementById('cancelAdminLogin').onclick = () => document.getElementById('adminLoginModal').classList.add('hidden'); [cite: 555]
+            
+            document.getElementById('adminLoginForm').onsubmit = async (e) => { [cite: 556]
+                e.preventDefault();
+                showLoading(); [cite: 557]
+                const res = await callServer('validateUser', { username: document.getElementById('adminUsername').value, password: document.getElementById('adminPassword').value });
+                hideLoading(); [cite: 557]
+                if(res.success) { Swal.fire('สำเร็จ', 'ระบบ Admin กำลังปรับปรุงเพื่อแยกหน้า UI', 'success'); document.getElementById('adminLoginModal').classList.add('hidden'); } [cite: 558]
+                else { Swal.fire('Error', res.message, 'error'); } [cite: 559]
+            };
+
+            document.getElementById('bookingForm').onsubmit = async (e) => { [cite: 547]
+                e.preventDefault();
+                showLoading(); [cite: 551]
+                const formData = {
+                    roomId: document.getElementById('roomSelect').value, [cite: 548]
+                    date: document.getElementById('bookingDate').value, [cite: 548]
+                    startTime: document.getElementById('startTime').value, [cite: 548]
+                    endTime: document.getElementById('endTime').value, [cite: 548]
+                    title: document.getElementById('meetingTitle').value, [cite: 548]
+                    attendees: document.getElementById('attendees').value, [cite: 548]
+                    bookerName: document.getElementById('bookerName').value [cite: 550]
+                };
+                
+                try {
+                    const res = await callServer('createBooking', formData);
+                    if(res.success) {
+                        Swal.fire('สำเร็จ', res.message, 'success'); [cite: 551]
+                        document.getElementById('bookingModal').classList.add('hidden'); [cite: 551]
+                        initializeApp(); // โหลดใหม่
+                    } else {
+                        Swal.fire('ผิดพลาด', res.message, 'error'); [cite: 552]
+                    }
+                } catch (e) { Swal.fire('Error', 'ไม่สามารถจองได้', 'error'); } [cite: 553]
+            };
+        }
+
+        function generateTimeOptions() {
+            const start = document.getElementById('startTime'), end = document.getElementById('endTime'); [cite: 469]
+            let opts = '<option value="">เลือกเวลา</option>'; [cite: 469]
+            for(let h=8; h<=18; h++) { ['00','30'].forEach(m => { opts += `<option value="${h}:${m}">${h}:${m}</option>`; }); } [cite: 470, 471]
+            start.innerHTML = opts; end.innerHTML = opts;
+        }
+
+        function showLoading() { document.getElementById('loadingSpinner').classList.remove('hidden'); } [cite: 802]
+        function hideLoading() { document.getElementById('loadingSpinner').classList.add('hidden'); } [cite: 803]
+    </script>
+</body>
+</html>
