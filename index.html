@@ -33,13 +33,17 @@
                 <h1 class="text-2xl font-bold">ระบบจองห้องประชุม</h1>
             </div>
             <div class="flex space-x-3">
-                <button id="bookingBtn" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-medium hover:bg-gray-100 transition-all shadow-md">
-                    <i class="fas fa-plus mr-2"></i>จองห้อง
-                </button>
-                <button id="adminBtn" class="bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-yellow-600 transition-all shadow-md">
-                    <i class="fas fa-user-shield mr-2"></i>Admin
-                </button>
-            </div>
+    <button id="activityBtn" class="bg-blue-500 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-600 transition-all shadow-md">
+        <i class="fas fa-calendar-check mr-2"></i>บันทึกกิจกรรม
+    </button>
+    
+    <button id="bookingBtn" class="bg-white text-purple-600 px-6 py-2 rounded-lg font-medium shadow-md">
+        <i class="fas fa-plus mr-2"></i>จองห้อง
+    </button>
+    <button id="adminBtn" class="bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium shadow-md">
+        <i class="fas fa-user-shield mr-2"></i>Admin
+    </button>
+</div>
         </div>
     </header>
 
@@ -215,7 +219,40 @@
     <div id="loadingSpinner" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-[100]">
         <div class="bg-white rounded-lg p-6 flex items-center space-x-3"><i class="fas fa-spinner spinner text-purple-600 text-2xl"></i><span class="text-gray-700 font-medium">กำลังประมวลผล...</span></div>
     </div>
+<div id="activityModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div class="bg-blue-600 text-white p-4 flex justify-between">
+            <h3 class="text-xl font-bold"><i class="fas fa-calendar-check mr-2"></i>บันทึกกิจกรรม</h3>
+            <button id="cancelActivity" class="hover:text-gray-200"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="activityForm" class="p-6 space-y-4">
+            <div><label class="block text-sm font-medium mb-1">วันที่</label><input type="date" id="actDate" class="w-full p-2 border rounded" required></div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-sm font-medium mb-1">เวลาเริ่ม</label><select id="actStartTime" class="w-full p-2 border rounded" required></select></div>
+                <div><label class="block text-sm font-medium mb-1">เวลาสิ้นสุด</label><select id="actEndTime" class="w-full p-2 border rounded" required></select></div>
+            </div>
+            <div><label class="block text-sm font-medium mb-1">หัวข้อกิจกรรม</label><input type="text" id="actTitle" class="w-full p-2 border rounded" required></div>
+            <div class="grid grid-cols-2 gap-4">
+                <div><label class="block text-sm font-medium mb-1">จำนวนคน</label><input type="number" id="actAttendees" class="w-full p-2 border rounded" required></div>
+                <div><label class="block text-sm font-medium mb-1">ผู้บันทึก</label><input id="actBooker" type="text" required list="bookerList" class="w-full p-2 border rounded"></div>
+            </div>
+            <div><label class="block text-sm font-medium mb-1">รายละเอียด/หมายเหตุ</label><textarea id="actNotes" class="w-full p-2 border rounded" rows="2"></textarea></div>
+            
+            <div class="border-t pt-4">
+                <label class="flex items-center font-bold text-blue-600 cursor-pointer">
+                    <input type="checkbox" id="actUseRoom" class="mr-2 w-4 h-4 text-blue-600"> 
+                    ต้องการจองห้องประชุมสำหรับกิจกรรมนี้ด้วย
+                </label>
+                <div id="actRoomContainer" class="hidden mt-3">
+                    <label class="block text-sm font-medium mb-1 text-gray-700">เลือกห้องประชุม <span class="text-red-500">*</span></label>
+                    <select id="actRoomSelect" class="w-full p-2 border rounded"></select>
+                </div>
+            </div>
 
+            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold mt-2 hover:bg-blue-700 shadow-md">บันทึกกิจกรรม</button>
+        </form>
+    </div>
+</div>
     <script>
         // ==========================================
         // API CONFIGURATION (เชื่อมกับ Apps Script)
@@ -426,6 +463,50 @@
             document.getElementById('startTime').onchange = updateEndTimeOptions;
         }
 
+        // === กดปุ่มเปิดหน้าต่างบันทึกกิจกรรม ===
+document.getElementById('activityBtn').onclick = () => {
+    document.getElementById('actRoomSelect').innerHTML = '<option value="">เลือกห้อง</option>' + cachedRooms.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+    document.getElementById('activityForm').reset();
+    document.getElementById('actRoomContainer').classList.add('hidden');
+    document.getElementById('actRoomSelect').required = false;
+    document.getElementById('activityModal').classList.remove('hidden');
+};
+
+document.getElementById('cancelActivity').onclick = () => document.getElementById('activityModal').classList.add('hidden');
+
+// === เช็คเงื่อนไขติ๊กถูก "จองห้องประชุมด้วย" ===
+document.getElementById('actUseRoom').onchange = (e) => {
+    const isChecked = e.target.checked;
+    document.getElementById('actRoomContainer').classList.toggle('hidden', !isChecked);
+    document.getElementById('actRoomSelect').required = isChecked;
+};
+
+// === ส่งข้อมูลบันทึกกิจกรรมเข้า API ===
+document.getElementById('activityForm').onsubmit = async (e) => {
+    e.preventDefault();
+    showLoading();
+    const data = {
+        date: document.getElementById('actDate').value,
+        startTime: document.getElementById('actStartTime').value,
+        endTime: document.getElementById('actEndTime').value,
+        title: document.getElementById('actTitle').value,
+        attendees: document.getElementById('actAttendees').value,
+        bookerName: document.getElementById('actBooker').value,
+        notes: document.getElementById('actNotes').value,
+        useRoom: document.getElementById('actUseRoom').checked,
+        roomId: document.getElementById('actRoomSelect').value
+    };
+    const res = await callServer('createActivity', data);
+    
+    if(res.success) {
+        Swal.fire('สำเร็จ', res.message, 'success');
+        document.getElementById('activityModal').classList.add('hidden');
+        initializeApp(); // โหลดข้อมูลกระดานใหม่
+    } else {
+        hideLoading();
+        Swal.fire('ผิดพลาด', res.message, 'error');
+    }
+};
         // === Booking Logic ===
         async function updateAvailableTimes() {
             const roomId = document.getElementById('roomSelect').value;
@@ -541,11 +622,18 @@
         }
 
         // === Helpers ===
-        function generateTimeOptions() {
-            let opts = '<option value="">เลือกเวลา</option>';
-            for(let h=8; h<=18; h++) { ['00','30'].forEach(m => { opts += `<option value="${h}:${m}">${h}:${m}</option>`; }); }
-            document.getElementById('startTime').innerHTML = opts; document.getElementById('endTime').innerHTML = opts;
-        }
+       function generateTimeOptions() {
+    let opts = '<option value="">เลือกเวลา</option>';
+    for(let h=8; h<=18; h++) { ['00','30'].forEach(m => { opts += `<option value="${h}:${m}">${h}:${m}</option>`; }); }
+    
+    // แบบฟอร์มจองห้อง
+    document.getElementById('startTime').innerHTML = opts; 
+    document.getElementById('endTime').innerHTML = opts;
+    
+    // แบบฟอร์มบันทึกกิจกรรม
+    document.getElementById('actStartTime').innerHTML = opts; 
+    document.getElementById('actEndTime').innerHTML = opts;
+}
         function updateEndTimeOptions() { /* Logic for matching end time */ }
 
         function loadFilterOptions() {
