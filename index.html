@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจองห้องประชุม & กิจกรรม</title>
+    <title>ระบบจองห้องประชุม & กิจกรรม โรงพยาบาลไทรโยค</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -29,8 +29,7 @@
     <header class="gradient-bg text-white shadow-lg sticky top-0 z-40">
         <div class="container mx-auto px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center space-x-3">
-                <i class="fas fa-calendar-alt text-2xl"></i>
-                <h1 class="text-2xl font-bold">ระบบจองห้อง & กิจกรรม</h1>
+                <!-- นำโลโก้และข้อความส่วนหัวออก -->
             </div>
             <div class="flex space-x-2 md:space-x-3 text-sm md:text-base">
                 <button id="activityBtn" class="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-gray-100 transition-all shadow-md">
@@ -48,7 +47,13 @@
 
     <div class="container mx-auto px-6 py-8">
         
-        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 card-shadow">
+        <div class="mb-4">
+            <button onclick="document.getElementById('calendarContainer').classList.toggle('hidden')" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium shadow-md hover:bg-gray-50 transition-all">
+                <i class="fas fa-calendar-alt mr-2"></i>แสดง/ซ่อน ปฏิทิน
+            </button>
+        </div>
+
+        <div id="calendarContainer" class="bg-white rounded-xl shadow-lg p-6 mb-8 card-shadow hidden">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div class="flex space-x-2">
                     <button id="calViewBookings" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow" onclick="setCalendarView('bookings')"><i class="fas fa-door-open mr-2"></i>ห้องประชุม</button>
@@ -316,7 +321,7 @@
     </div>
 
     <script>
-        const API_URL = "https://script.google.com/macros/s/AKfycbznEd9qFuZBvQLL7a-iFC9ET2uUIV8oArCj3wWtMMQFQuUWRfnhRH7cd5tIzMTA5OGsvQ/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxB9qJQi0KAmdgCUyBQ5PwDjnDWYRxFh4d5-6Je-64QJplFftSRpfC3uHCLX8ALttx6CQ/exec";
 
         async function callServer(action, data = {}) {
             try {
@@ -351,7 +356,6 @@
             initNotesUI();
         });
 
-        // ฟังก์ชันเริ่มทำงานแบบ "โคตรปลอดภัย"
         async function initializeApp() {
             showLoading();
             try {
@@ -382,7 +386,7 @@
                 renderActivityTable();
                 
                 if(!document.getElementById('adminDashboard').classList.contains('hidden')) {
-                    renderAdminDashboard(); // Refresh admin if open
+                    renderAdminDashboard();
                 }
 
             } catch (error) {
@@ -579,9 +583,6 @@
             if(res.success) { Swal.fire('สำเร็จ', res.message, 'success'); document.getElementById('activityModal').classList.add('hidden'); initializeApp(); } else { hideLoading(); Swal.fire('ผิดพลาด', res.message, 'error'); }
         }
 
-        // ==========================
-        // Admin Functionality
-        // ==========================
         async function handleAdminLogin(e) {
             e.preventDefault(); showLoading();
             const res = await callServer('validateUser', { username: document.getElementById('adminUsername').value, password: document.getElementById('adminPassword').value });
@@ -630,9 +631,6 @@
             }
         }
 
-        // ==========================
-        // Utilities
-        // ==========================
         function generateTimeOptions() { let opts = '<option value="">เลือกเวลา</option>'; for(let h=8; h<=18; h++) { ['00','30'].forEach(m => { opts += `<option value="${h}:${m}">${h}:${m}</option>`; }); } document.getElementById('startTime').innerHTML = opts; document.getElementById('endTime').innerHTML = opts; document.getElementById('actStartTime').innerHTML = opts; document.getElementById('actEndTime').innerHTML = opts; }
         function loadFilterOptions() { document.getElementById('filterRoom').innerHTML = '<option value="">ทุกห้อง</option>' + cachedRooms.map(r => `<option value="${r.id}">${r.name}</option>`).join(''); }
         function initNotesUI() { document.getElementById('otherNote').onchange = (e) => { const text = document.getElementById('otherNoteText'); text.classList.toggle('hidden', !e.target.checked); if(!e.target.checked) text.value = ''; }; document.getElementById('actOtherNote').onchange = (e) => { const text = document.getElementById('actOtherNoteText'); text.classList.toggle('hidden', !e.target.checked); if(!e.target.checked) text.value = ''; }; }
