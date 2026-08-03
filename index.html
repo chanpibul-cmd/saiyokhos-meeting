@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบจองห้องประชุม & กิจกรรม โรงพยาบาลไทรโยค</title>
+    <title>ระบบจองห้องประชุม & กิจกรรม</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -47,13 +47,7 @@
 
     <div class="container mx-auto px-6 py-8">
         
-        <div class="mb-4">
-            <button onclick="document.getElementById('calendarContainer').classList.toggle('hidden')" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-medium shadow-md hover:bg-gray-50 transition-all">
-                <i class="fas fa-calendar-alt mr-2"></i>แสดง/ซ่อน ปฏิทิน
-            </button>
-        </div>
-
-        <div id="calendarContainer" class="bg-white rounded-xl shadow-lg p-6 mb-8 card-shadow hidden">
+        <div id="calendarContainer" class="bg-white rounded-xl shadow-lg p-6 mb-8 card-shadow">
             <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                 <div class="flex space-x-2">
                     <button id="calViewBookings" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium shadow" onclick="setCalendarView('bookings')"><i class="fas fa-door-open mr-2"></i>ห้องประชุม</button>
